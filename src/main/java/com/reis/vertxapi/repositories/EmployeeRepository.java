@@ -1,5 +1,8 @@
 package com.reis.vertxapi.repositories;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.reis.vertxapi.entities.Employee;
 
 import io.vertx.core.AsyncResult;
@@ -19,6 +22,21 @@ public class EmployeeRepository {
 		this.mongoClient = MongoClient.createShared(vertx, config);
 	}
 
+	public void getAll(Handler<AsyncResult<List<Employee>>> resultHandler) {
+		mongoClient.find("employees", new JsonObject(), ar -> {
+			if (ar.succeeded()) {
+				List<Employee> employees = new ArrayList<>();
+				for (JsonObject json : ar.result()) {
+					Employee employee = json.mapTo(Employee.class);
+					employees.add(employee);
+				}
+				resultHandler.handle(Future.succeededFuture(employees));
+			} else {
+				resultHandler.handle(Future.failedFuture(ar.cause()));
+			}
+		});
+	}
+
 	public void create(Employee employee, Handler<AsyncResult<Void>> resultHandler) {
 		JsonObject document = JsonObject.mapFrom(employee);
 		mongoClient.insert("employees", document, ar -> {
@@ -30,7 +48,7 @@ public class EmployeeRepository {
 		});
 	}
 
-	public void read(String id, Handler<AsyncResult<Employee>> resultHandler) {
+	public void getById(String id, Handler<AsyncResult<Employee>> resultHandler) {
 		JsonObject query = new JsonObject().put("_id", id);
 		mongoClient.findOne("employees", query, null, ar -> {
 			if (ar.succeeded()) {
