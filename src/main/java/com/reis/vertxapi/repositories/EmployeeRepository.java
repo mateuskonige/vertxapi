@@ -17,7 +17,7 @@ public class EmployeeRepository {
 
 	public EmployeeRepository(Vertx vertx) {
 		JsonObject config = new JsonObject().put("connection_string", "mongodb://localhost:27017").put("db_name",
-				"test.employees");
+				"test");
 
 		this.mongoClient = MongoClient.createShared(vertx, config);
 	}
